@@ -1,0 +1,64 @@
+**Enable widgets in Colab**
+from google.colab import output
+output.enable_custom_widget_manager()
+
+**Install Leafmap**
+!pip install leafmap
+**Import Required Libraries**
+import leafmap
+import pandas as pd
+
+**Initialize a basic map**
+m = leafmap.Map(center=[40, -95], zoom=5)
+**Add a basemap**
+m.add_basemap("Esri.WorldImagery")
+**Add NLCD 2021 Land Cover WMS Layer**
+url = "https://www.mrlc.gov/geoserver/mrlc_display/NLCD_2021_Land_Cover_L48/wms?"
+m.add_wms_layer(
+    url=url,
+    layers="NLCD_2021_Land_Cover_L48",
+    name="NLCD 2021",
+    attribution="MRLC",
+    format="image/png",
+    shown=True,
+)
+
+**Adding a shapefile**
+!pip install fiona
+shapefile = "https://github.com/giswqs/leafmap/raw/master/examples/data/us_states.shp"
+m.add_vector(shapefile)
+
+**Add marker for states with maximum “Cultivated crop area”**
+markers = [
+    {"state": "Iowa", "latitude": 42.0, "longitude": -93.0, "area": "Maximum Cultivated Crops"},
+    {"state": "Nebraska", "latitude": 41.125, "longitude": -98.268, "area": "Maximum Cultivated Crops"},
+    {"state": "Kansas", "latitude": 38.5, "longitude": -98.0, "area": "Maximum Cultivated Crops"},
+    {"state": "Illinois", "latitude": 40.0, "longitude": -89.0, "area": "Maximum Cultivated Crops"},
+    {"state": "Indiana", "latitude": 40.0, "longitude": -86.0, "area": "Maximum Cultivated Crops"}
+]
+
+**Convert markers to a DataFrame**
+cities = pd.DataFrame(markers)
+**Add points to the map**
+m.add_points_from_xy(
+    cities,
+    x="longitude",  # Column name for longitude
+    y="latitude",   # Column name for latitude
+    color_column="state",  # Use the "state" column to differentiate colors
+    icon_names=["info", "map", "leaf", "globe", "star"],  # 5 icons for 5 states
+    spin=True,  # Make icons spin (optional)
+    add_legend=True,  # Add a legend
+)
+
+**Add legend (for NLCD) and show map**
+m.add_legend(title="NLCD Land Cover Type", builtin_legend="NLCD")
+m
+**Save the map as an HTML file**
+output_file = "map.html"
+m.to_html(output_file)
+print(f"Map saved as {output_file}")
+m
+**Download the HTML file to your desktop**
+from google.colab import files
+files.download(output_file)
+
